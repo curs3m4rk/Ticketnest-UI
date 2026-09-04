@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, type LinkProps } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 
 import { SiteFooter } from "@/components/site-footer";
@@ -7,8 +7,8 @@ import { SiteHeader } from "@/components/site-header";
 
 export interface Crumb {
   label: string;
-  to?: string;
-  params?: Record<string, string>;
+  to?: LinkProps["to"];
+  params?: LinkProps["params"];
 }
 
 export function PageShell({
