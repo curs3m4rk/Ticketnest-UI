@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, MapPin, Search, Star } from "lucide-react";
 
@@ -240,7 +240,9 @@ function ShowsPage() {
                     {price ? formatMoney(price) : "—"}
                   </span>
                   <Button asChild size="sm">
-                    <a href={`/shows/${show.id}`}>View details</a>
+                    <Link to="/shows/$showId" params={{ showId: show.id }}>
+                      View details
+                    </Link>
                   </Button>
                 </div>
               </article>

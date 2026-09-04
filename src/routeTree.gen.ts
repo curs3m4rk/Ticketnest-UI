@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShowsIndexRouteImport } from './routes/shows.index'
+import { Route as ShowsShowIdIndexRouteImport } from './routes/shows.$showId.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShowsIndexRoute = ShowsIndexRouteImport.update({
+  id: '/shows/',
+  path: '/shows/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShowsShowIdIndexRoute = ShowsShowIdIndexRouteImport.update({
+  id: '/shows/$showId/',
+  path: '/shows/$showId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/shows/': typeof ShowsIndexRoute
+  '/shows/$showId/': typeof ShowsShowIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/shows': typeof ShowsIndexRoute
+  '/shows/$showId': typeof ShowsShowIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/shows/': typeof ShowsIndexRoute
+  '/shows/$showId/': typeof ShowsShowIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/shows/' | '/shows/$showId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/shows' | '/shows/$showId'
+  id: '__root__' | '/' | '/shows/' | '/shows/$showId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ShowsIndexRoute: typeof ShowsIndexRoute
+  ShowsShowIdIndexRoute: typeof ShowsShowIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shows/': {
+      id: '/shows/'
+      path: '/shows'
+      fullPath: '/shows/'
+      preLoaderRoute: typeof ShowsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shows/$showId/': {
+      id: '/shows/$showId/'
+      path: '/shows/$showId'
+      fullPath: '/shows/$showId/'
+      preLoaderRoute: typeof ShowsShowIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ShowsIndexRoute: ShowsIndexRoute,
+  ShowsShowIdIndexRoute: ShowsShowIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
