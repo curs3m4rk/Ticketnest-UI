@@ -10,33 +10,167 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CartRouteImport } from './routes/cart'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as AuthRegisterRouteImport } from './routes/auth.register'
+import { Route as ConfirmationReferenceRouteImport } from './routes/confirmation.$reference'
+import { Route as ShowsIndexRouteImport } from './routes/shows.index'
+import { Route as VenuesIndexRouteImport } from './routes/venues.index'
+import { Route as VenuesVenueIdRouteImport } from './routes/venues.$venueId'
+import { Route as ShowsShowIdIndexRouteImport } from './routes/shows.$showId.index'
+import { Route as ShowsShowIdSeatsRouteImport } from './routes/shows.$showId.seats'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CartRoute = CartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/auth/register',
+  path: '/auth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfirmationReferenceRoute = ConfirmationReferenceRouteImport.update({
+  id: '/confirmation/$reference',
+  path: '/confirmation/$reference',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShowsIndexRoute = ShowsIndexRouteImport.update({
+  id: '/shows/',
+  path: '/shows/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VenuesIndexRoute = VenuesIndexRouteImport.update({
+  id: '/venues/',
+  path: '/venues/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VenuesVenueIdRoute = VenuesVenueIdRouteImport.update({
+  id: '/venues/$venueId',
+  path: '/venues/$venueId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShowsShowIdIndexRoute = ShowsShowIdIndexRouteImport.update({
+  id: '/shows/$showId/',
+  path: '/shows/$showId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShowsShowIdSeatsRoute = ShowsShowIdSeatsRouteImport.update({
+  id: '/shows/$showId/seats',
+  path: '/shows/$showId/seats',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/confirmation/$reference': typeof ConfirmationReferenceRoute
+  '/venues/$venueId': typeof VenuesVenueIdRoute
+  '/shows/': typeof ShowsIndexRoute
+  '/venues/': typeof VenuesIndexRoute
+  '/shows/$showId/seats': typeof ShowsShowIdSeatsRoute
+  '/shows/$showId/': typeof ShowsShowIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/confirmation/$reference': typeof ConfirmationReferenceRoute
+  '/venues/$venueId': typeof VenuesVenueIdRoute
+  '/shows': typeof ShowsIndexRoute
+  '/venues': typeof VenuesIndexRoute
+  '/shows/$showId/seats': typeof ShowsShowIdSeatsRoute
+  '/shows/$showId': typeof ShowsShowIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/confirmation/$reference': typeof ConfirmationReferenceRoute
+  '/venues/$venueId': typeof VenuesVenueIdRoute
+  '/shows/': typeof ShowsIndexRoute
+  '/venues/': typeof VenuesIndexRoute
+  '/shows/$showId/seats': typeof ShowsShowIdSeatsRoute
+  '/shows/$showId/': typeof ShowsShowIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/cart'
+    | '/checkout'
+    | '/auth/login'
+    | '/auth/register'
+    | '/confirmation/$reference'
+    | '/venues/$venueId'
+    | '/shows/'
+    | '/venues/'
+    | '/shows/$showId/seats'
+    | '/shows/$showId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/cart'
+    | '/checkout'
+    | '/auth/login'
+    | '/auth/register'
+    | '/confirmation/$reference'
+    | '/venues/$venueId'
+    | '/shows'
+    | '/venues'
+    | '/shows/$showId/seats'
+    | '/shows/$showId'
+  id:
+    | '__root__'
+    | '/'
+    | '/cart'
+    | '/checkout'
+    | '/auth/login'
+    | '/auth/register'
+    | '/confirmation/$reference'
+    | '/venues/$venueId'
+    | '/shows/'
+    | '/venues/'
+    | '/shows/$showId/seats'
+    | '/shows/$showId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CartRoute: typeof CartRoute
+  CheckoutRoute: typeof CheckoutRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
+  ConfirmationReferenceRoute: typeof ConfirmationReferenceRoute
+  VenuesVenueIdRoute: typeof VenuesVenueIdRoute
+  ShowsIndexRoute: typeof ShowsIndexRoute
+  VenuesIndexRoute: typeof VenuesIndexRoute
+  ShowsShowIdSeatsRoute: typeof ShowsShowIdSeatsRoute
+  ShowsShowIdIndexRoute: typeof ShowsShowIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +182,91 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cart': {
+      id: '/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/register': {
+      id: '/auth/register'
+      path: '/auth/register'
+      fullPath: '/auth/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/confirmation/$reference': {
+      id: '/confirmation/$reference'
+      path: '/confirmation/$reference'
+      fullPath: '/confirmation/$reference'
+      preLoaderRoute: typeof ConfirmationReferenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shows/': {
+      id: '/shows/'
+      path: '/shows'
+      fullPath: '/shows/'
+      preLoaderRoute: typeof ShowsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/venues/': {
+      id: '/venues/'
+      path: '/venues'
+      fullPath: '/venues/'
+      preLoaderRoute: typeof VenuesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/venues/$venueId': {
+      id: '/venues/$venueId'
+      path: '/venues/$venueId'
+      fullPath: '/venues/$venueId'
+      preLoaderRoute: typeof VenuesVenueIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shows/$showId/': {
+      id: '/shows/$showId/'
+      path: '/shows/$showId'
+      fullPath: '/shows/$showId/'
+      preLoaderRoute: typeof ShowsShowIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shows/$showId/seats': {
+      id: '/shows/$showId/seats'
+      path: '/shows/$showId/seats'
+      fullPath: '/shows/$showId/seats'
+      preLoaderRoute: typeof ShowsShowIdSeatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CartRoute: CartRoute,
+  CheckoutRoute: CheckoutRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  AuthRegisterRoute: AuthRegisterRoute,
+  ConfirmationReferenceRoute: ConfirmationReferenceRoute,
+  VenuesVenueIdRoute: VenuesVenueIdRoute,
+  ShowsIndexRoute: ShowsIndexRoute,
+  VenuesIndexRoute: VenuesIndexRoute,
+  ShowsShowIdSeatsRoute: ShowsShowIdSeatsRoute,
+  ShowsShowIdIndexRoute: ShowsShowIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
