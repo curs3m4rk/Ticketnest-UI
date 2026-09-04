@@ -10,12 +10,31 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CartRouteImport } from './routes/cart'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as ConfirmationReferenceRouteImport } from './routes/confirmation.$reference'
 import { Route as ShowsIndexRouteImport } from './routes/shows.index'
 import { Route as ShowsShowIdIndexRouteImport } from './routes/shows.$showId.index'
+import { Route as ShowsShowIdSeatsRouteImport } from './routes/shows.$showId.seats'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartRoute = CartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfirmationReferenceRoute = ConfirmationReferenceRouteImport.update({
+  id: '/confirmation/$reference',
+  path: '/confirmation/$reference',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShowsIndexRoute = ShowsIndexRouteImport.update({
@@ -28,34 +47,77 @@ const ShowsShowIdIndexRoute = ShowsShowIdIndexRouteImport.update({
   path: '/shows/$showId/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShowsShowIdSeatsRoute = ShowsShowIdSeatsRouteImport.update({
+  id: '/shows/$showId/seats',
+  path: '/shows/$showId/seats',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
+  '/confirmation/$reference': typeof ConfirmationReferenceRoute
   '/shows/': typeof ShowsIndexRoute
+  '/shows/$showId/seats': typeof ShowsShowIdSeatsRoute
   '/shows/$showId/': typeof ShowsShowIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
+  '/confirmation/$reference': typeof ConfirmationReferenceRoute
   '/shows': typeof ShowsIndexRoute
+  '/shows/$showId/seats': typeof ShowsShowIdSeatsRoute
   '/shows/$showId': typeof ShowsShowIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cart': typeof CartRoute
+  '/checkout': typeof CheckoutRoute
+  '/confirmation/$reference': typeof ConfirmationReferenceRoute
   '/shows/': typeof ShowsIndexRoute
+  '/shows/$showId/seats': typeof ShowsShowIdSeatsRoute
   '/shows/$showId/': typeof ShowsShowIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/shows/' | '/shows/$showId/'
+  fullPaths:
+    | '/'
+    | '/cart'
+    | '/checkout'
+    | '/confirmation/$reference'
+    | '/shows/'
+    | '/shows/$showId/seats'
+    | '/shows/$showId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/shows' | '/shows/$showId'
-  id: '__root__' | '/' | '/shows/' | '/shows/$showId/'
+  to:
+    | '/'
+    | '/cart'
+    | '/checkout'
+    | '/confirmation/$reference'
+    | '/shows'
+    | '/shows/$showId/seats'
+    | '/shows/$showId'
+  id:
+    | '__root__'
+    | '/'
+    | '/cart'
+    | '/checkout'
+    | '/confirmation/$reference'
+    | '/shows/'
+    | '/shows/$showId/seats'
+    | '/shows/$showId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CartRoute: typeof CartRoute
+  CheckoutRoute: typeof CheckoutRoute
+  ConfirmationReferenceRoute: typeof ConfirmationReferenceRoute
   ShowsIndexRoute: typeof ShowsIndexRoute
+  ShowsShowIdSeatsRoute: typeof ShowsShowIdSeatsRoute
   ShowsShowIdIndexRoute: typeof ShowsShowIdIndexRoute
 }
 
@@ -66,6 +128,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cart': {
+      id: '/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/confirmation/$reference': {
+      id: '/confirmation/$reference'
+      path: '/confirmation/$reference'
+      fullPath: '/confirmation/$reference'
+      preLoaderRoute: typeof ConfirmationReferenceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shows/': {
@@ -82,12 +165,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShowsShowIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shows/$showId/seats': {
+      id: '/shows/$showId/seats'
+      path: '/shows/$showId/seats'
+      fullPath: '/shows/$showId/seats'
+      preLoaderRoute: typeof ShowsShowIdSeatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CartRoute: CartRoute,
+  CheckoutRoute: CheckoutRoute,
+  ConfirmationReferenceRoute: ConfirmationReferenceRoute,
   ShowsIndexRoute: ShowsIndexRoute,
+  ShowsShowIdSeatsRoute: ShowsShowIdSeatsRoute,
   ShowsShowIdIndexRoute: ShowsShowIdIndexRoute,
 }
 export const routeTree = rootRouteImport
