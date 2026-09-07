@@ -10,8 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountRouteRouteImport } from './routes/account.route'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as AccountIndexRouteImport } from './routes/account.index'
+import { Route as AccountPaymentMethodsRouteImport } from './routes/account.payment-methods'
+import { Route as AccountProfileRouteImport } from './routes/account.profile'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
 import { Route as ConfirmationReferenceRouteImport } from './routes/confirmation.$reference'
@@ -26,6 +30,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountRouteRoute = AccountRouteRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CartRoute = CartRouteImport.update({
   id: '/cart',
   path: '/cart',
@@ -35,6 +44,21 @@ const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AccountIndexRoute = AccountIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AccountRouteRoute,
+} as any)
+const AccountPaymentMethodsRoute = AccountPaymentMethodsRouteImport.update({
+  id: '/payment-methods',
+  path: '/payment-methods',
+  getParentRoute: () => AccountRouteRoute,
+} as any)
+const AccountProfileRoute = AccountProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AccountRouteRoute,
 } as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/auth/login',
@@ -79,12 +103,16 @@ const ShowsShowIdSeatsRoute = ShowsShowIdSeatsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRouteRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/account/payment-methods': typeof AccountPaymentMethodsRoute
+  '/account/profile': typeof AccountProfileRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/confirmation/$reference': typeof ConfirmationReferenceRoute
   '/venues/$venueId': typeof VenuesVenueIdRoute
+  '/account/': typeof AccountIndexRoute
   '/shows/': typeof ShowsIndexRoute
   '/venues/': typeof VenuesIndexRoute
   '/shows/$showId/seats': typeof ShowsShowIdSeatsRoute
@@ -94,10 +122,13 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/account/payment-methods': typeof AccountPaymentMethodsRoute
+  '/account/profile': typeof AccountProfileRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/confirmation/$reference': typeof ConfirmationReferenceRoute
   '/venues/$venueId': typeof VenuesVenueIdRoute
+  '/account': typeof AccountIndexRoute
   '/shows': typeof ShowsIndexRoute
   '/venues': typeof VenuesIndexRoute
   '/shows/$showId/seats': typeof ShowsShowIdSeatsRoute
@@ -106,12 +137,16 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRouteRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/account/payment-methods': typeof AccountPaymentMethodsRoute
+  '/account/profile': typeof AccountProfileRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/confirmation/$reference': typeof ConfirmationReferenceRoute
   '/venues/$venueId': typeof VenuesVenueIdRoute
+  '/account/': typeof AccountIndexRoute
   '/shows/': typeof ShowsIndexRoute
   '/venues/': typeof VenuesIndexRoute
   '/shows/$showId/seats': typeof ShowsShowIdSeatsRoute
@@ -121,12 +156,16 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
     | '/cart'
     | '/checkout'
+    | '/account/payment-methods'
+    | '/account/profile'
     | '/auth/login'
     | '/auth/register'
     | '/confirmation/$reference'
     | '/venues/$venueId'
+    | '/account/'
     | '/shows/'
     | '/venues/'
     | '/shows/$showId/seats'
@@ -136,10 +175,13 @@ export interface FileRouteTypes {
     | '/'
     | '/cart'
     | '/checkout'
+    | '/account/payment-methods'
+    | '/account/profile'
     | '/auth/login'
     | '/auth/register'
     | '/confirmation/$reference'
     | '/venues/$venueId'
+    | '/account'
     | '/shows'
     | '/venues'
     | '/shows/$showId/seats'
@@ -147,12 +189,16 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/account'
     | '/cart'
     | '/checkout'
+    | '/account/payment-methods'
+    | '/account/profile'
     | '/auth/login'
     | '/auth/register'
     | '/confirmation/$reference'
     | '/venues/$venueId'
+    | '/account/'
     | '/shows/'
     | '/venues/'
     | '/shows/$showId/seats'
@@ -161,6 +207,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRouteRoute: typeof AccountRouteRouteWithChildren
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   AuthLoginRoute: typeof AuthLoginRoute
@@ -182,6 +229,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cart': {
       id: '/cart'
       path: '/cart'
@@ -195,6 +249,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/account/': {
+      id: '/account/'
+      path: '/'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AccountIndexRouteImport
+      parentRoute: typeof AccountRouteRoute
+    }
+    '/account/payment-methods': {
+      id: '/account/payment-methods'
+      path: '/payment-methods'
+      fullPath: '/account/payment-methods'
+      preLoaderRoute: typeof AccountPaymentMethodsRouteImport
+      parentRoute: typeof AccountRouteRoute
+    }
+    '/account/profile': {
+      id: '/account/profile'
+      path: '/profile'
+      fullPath: '/account/profile'
+      preLoaderRoute: typeof AccountProfileRouteImport
+      parentRoute: typeof AccountRouteRoute
     }
     '/auth/login': {
       id: '/auth/login'
@@ -255,8 +330,25 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AccountRouteRouteChildren {
+  AccountPaymentMethodsRoute: typeof AccountPaymentMethodsRoute
+  AccountProfileRoute: typeof AccountProfileRoute
+  AccountIndexRoute: typeof AccountIndexRoute
+}
+
+const AccountRouteRouteChildren: AccountRouteRouteChildren = {
+  AccountPaymentMethodsRoute: AccountPaymentMethodsRoute,
+  AccountProfileRoute: AccountProfileRoute,
+  AccountIndexRoute: AccountIndexRoute,
+}
+
+const AccountRouteRouteWithChildren = AccountRouteRoute._addFileChildren(
+  AccountRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRouteRoute: AccountRouteRouteWithChildren,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   AuthLoginRoute: AuthLoginRoute,
