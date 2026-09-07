@@ -10,20 +10,40 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountRouteRouteImport } from './routes/account.route'
+import { Route as AdminRouteRouteImport } from './routes/admin.route'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as AccountIndexRouteImport } from './routes/account.index'
+import { Route as AccountBookingsRouteImport } from './routes/account.bookings'
+import { Route as AccountPaymentMethodsRouteImport } from './routes/account.payment-methods'
+import { Route as AccountProfileRouteImport } from './routes/account.profile'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminShowsRouteImport } from './routes/admin.shows'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
 import { Route as ConfirmationReferenceRouteImport } from './routes/confirmation.$reference'
 import { Route as ShowsIndexRouteImport } from './routes/shows.index'
 import { Route as VenuesIndexRouteImport } from './routes/venues.index'
 import { Route as VenuesVenueIdRouteImport } from './routes/venues.$venueId'
+import { Route as AccountTicketsReferenceRouteImport } from './routes/account.tickets.$reference'
+import { Route as AdminVenuesIndexRouteImport } from './routes/admin.venues.index'
 import { Route as ShowsShowIdIndexRouteImport } from './routes/shows.$showId.index'
 import { Route as ShowsShowIdSeatsRouteImport } from './routes/shows.$showId.seats'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRouteRoute = AccountRouteRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRoute = CartRouteImport.update({
@@ -35,6 +55,36 @@ const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AccountIndexRoute = AccountIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AccountRouteRoute,
+} as any)
+const AccountBookingsRoute = AccountBookingsRouteImport.update({
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => AccountRouteRoute,
+} as any)
+const AccountPaymentMethodsRoute = AccountPaymentMethodsRouteImport.update({
+  id: '/payment-methods',
+  path: '/payment-methods',
+  getParentRoute: () => AccountRouteRoute,
+} as any)
+const AccountProfileRoute = AccountProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AccountRouteRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminShowsRoute = AdminShowsRouteImport.update({
+  id: '/shows',
+  path: '/shows',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/auth/login',
@@ -66,6 +116,16 @@ const VenuesVenueIdRoute = VenuesVenueIdRouteImport.update({
   path: '/venues/$venueId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountTicketsReferenceRoute = AccountTicketsReferenceRouteImport.update({
+  id: '/tickets/$reference',
+  path: '/tickets/$reference',
+  getParentRoute: () => AccountRouteRoute,
+} as any)
+const AdminVenuesIndexRoute = AdminVenuesIndexRouteImport.update({
+  id: '/venues/',
+  path: '/venues/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const ShowsShowIdIndexRoute = ShowsShowIdIndexRouteImport.update({
   id: '/shows/$showId/',
   path: '/shows/$showId/',
@@ -79,88 +139,146 @@ const ShowsShowIdSeatsRoute = ShowsShowIdSeatsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRouteRouteWithChildren
+  '/admin': typeof AdminRouteRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/account/bookings': typeof AccountBookingsRoute
+  '/account/payment-methods': typeof AccountPaymentMethodsRoute
+  '/account/profile': typeof AccountProfileRoute
+  '/admin/shows': typeof AdminShowsRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/confirmation/$reference': typeof ConfirmationReferenceRoute
   '/venues/$venueId': typeof VenuesVenueIdRoute
+  '/account/': typeof AccountIndexRoute
+  '/admin/': typeof AdminIndexRoute
   '/shows/': typeof ShowsIndexRoute
   '/venues/': typeof VenuesIndexRoute
+  '/account/tickets/$reference': typeof AccountTicketsReferenceRoute
   '/shows/$showId/seats': typeof ShowsShowIdSeatsRoute
+  '/admin/venues/': typeof AdminVenuesIndexRoute
   '/shows/$showId/': typeof ShowsShowIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/account/bookings': typeof AccountBookingsRoute
+  '/account/payment-methods': typeof AccountPaymentMethodsRoute
+  '/account/profile': typeof AccountProfileRoute
+  '/admin/shows': typeof AdminShowsRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/confirmation/$reference': typeof ConfirmationReferenceRoute
   '/venues/$venueId': typeof VenuesVenueIdRoute
+  '/account': typeof AccountIndexRoute
+  '/admin': typeof AdminIndexRoute
   '/shows': typeof ShowsIndexRoute
   '/venues': typeof VenuesIndexRoute
+  '/account/tickets/$reference': typeof AccountTicketsReferenceRoute
   '/shows/$showId/seats': typeof ShowsShowIdSeatsRoute
+  '/admin/venues': typeof AdminVenuesIndexRoute
   '/shows/$showId': typeof ShowsShowIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRouteRouteWithChildren
+  '/admin': typeof AdminRouteRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/account/bookings': typeof AccountBookingsRoute
+  '/account/payment-methods': typeof AccountPaymentMethodsRoute
+  '/account/profile': typeof AccountProfileRoute
+  '/admin/shows': typeof AdminShowsRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/confirmation/$reference': typeof ConfirmationReferenceRoute
   '/venues/$venueId': typeof VenuesVenueIdRoute
+  '/account/': typeof AccountIndexRoute
+  '/admin/': typeof AdminIndexRoute
   '/shows/': typeof ShowsIndexRoute
   '/venues/': typeof VenuesIndexRoute
+  '/account/tickets/$reference': typeof AccountTicketsReferenceRoute
   '/shows/$showId/seats': typeof ShowsShowIdSeatsRoute
+  '/admin/venues/': typeof AdminVenuesIndexRoute
   '/shows/$showId/': typeof ShowsShowIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
+    | '/admin'
     | '/cart'
     | '/checkout'
+    | '/account/bookings'
+    | '/account/payment-methods'
+    | '/account/profile'
+    | '/admin/shows'
     | '/auth/login'
     | '/auth/register'
     | '/confirmation/$reference'
     | '/venues/$venueId'
+    | '/account/'
+    | '/admin/'
     | '/shows/'
     | '/venues/'
+    | '/account/tickets/$reference'
     | '/shows/$showId/seats'
+    | '/admin/venues/'
     | '/shows/$showId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/cart'
     | '/checkout'
+    | '/account/bookings'
+    | '/account/payment-methods'
+    | '/account/profile'
+    | '/admin/shows'
     | '/auth/login'
     | '/auth/register'
     | '/confirmation/$reference'
     | '/venues/$venueId'
+    | '/account'
+    | '/admin'
     | '/shows'
     | '/venues'
+    | '/account/tickets/$reference'
     | '/shows/$showId/seats'
+    | '/admin/venues'
     | '/shows/$showId'
   id:
     | '__root__'
     | '/'
+    | '/account'
+    | '/admin'
     | '/cart'
     | '/checkout'
+    | '/account/bookings'
+    | '/account/payment-methods'
+    | '/account/profile'
+    | '/admin/shows'
     | '/auth/login'
     | '/auth/register'
     | '/confirmation/$reference'
     | '/venues/$venueId'
+    | '/account/'
+    | '/admin/'
     | '/shows/'
     | '/venues/'
+    | '/account/tickets/$reference'
     | '/shows/$showId/seats'
+    | '/admin/venues/'
     | '/shows/$showId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRouteRoute: typeof AccountRouteRouteWithChildren
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   AuthLoginRoute: typeof AuthLoginRoute
@@ -182,6 +300,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cart': {
       id: '/cart'
       path: '/cart'
@@ -195,6 +327,48 @@ declare module '@tanstack/react-router' {
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/account/': {
+      id: '/account/'
+      path: '/'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AccountIndexRouteImport
+      parentRoute: typeof AccountRouteRoute
+    }
+    '/account/bookings': {
+      id: '/account/bookings'
+      path: '/bookings'
+      fullPath: '/account/bookings'
+      preLoaderRoute: typeof AccountBookingsRouteImport
+      parentRoute: typeof AccountRouteRoute
+    }
+    '/account/payment-methods': {
+      id: '/account/payment-methods'
+      path: '/payment-methods'
+      fullPath: '/account/payment-methods'
+      preLoaderRoute: typeof AccountPaymentMethodsRouteImport
+      parentRoute: typeof AccountRouteRoute
+    }
+    '/account/profile': {
+      id: '/account/profile'
+      path: '/profile'
+      fullPath: '/account/profile'
+      preLoaderRoute: typeof AccountProfileRouteImport
+      parentRoute: typeof AccountRouteRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/shows': {
+      id: '/admin/shows'
+      path: '/shows'
+      fullPath: '/admin/shows'
+      preLoaderRoute: typeof AdminShowsRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/auth/login': {
       id: '/auth/login'
@@ -238,6 +412,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VenuesVenueIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/tickets/$reference': {
+      id: '/account/tickets/$reference'
+      path: '/tickets/$reference'
+      fullPath: '/account/tickets/$reference'
+      preLoaderRoute: typeof AccountTicketsReferenceRouteImport
+      parentRoute: typeof AccountRouteRoute
+    }
+    '/admin/venues/': {
+      id: '/admin/venues/'
+      path: '/venues'
+      fullPath: '/admin/venues/'
+      preLoaderRoute: typeof AdminVenuesIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/shows/$showId/': {
       id: '/shows/$showId/'
       path: '/shows/$showId'
@@ -255,8 +443,46 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AccountRouteRouteChildren {
+  AccountBookingsRoute: typeof AccountBookingsRoute
+  AccountPaymentMethodsRoute: typeof AccountPaymentMethodsRoute
+  AccountProfileRoute: typeof AccountProfileRoute
+  AccountIndexRoute: typeof AccountIndexRoute
+  AccountTicketsReferenceRoute: typeof AccountTicketsReferenceRoute
+}
+
+const AccountRouteRouteChildren: AccountRouteRouteChildren = {
+  AccountBookingsRoute: AccountBookingsRoute,
+  AccountPaymentMethodsRoute: AccountPaymentMethodsRoute,
+  AccountProfileRoute: AccountProfileRoute,
+  AccountIndexRoute: AccountIndexRoute,
+  AccountTicketsReferenceRoute: AccountTicketsReferenceRoute,
+}
+
+const AccountRouteRouteWithChildren = AccountRouteRoute._addFileChildren(
+  AccountRouteRouteChildren,
+)
+
+interface AdminRouteRouteChildren {
+  AdminShowsRoute: typeof AdminShowsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminVenuesIndexRoute: typeof AdminVenuesIndexRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminShowsRoute: AdminShowsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  AdminVenuesIndexRoute: AdminVenuesIndexRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRouteRoute: AccountRouteRouteWithChildren,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   AuthLoginRoute: AuthLoginRoute,
