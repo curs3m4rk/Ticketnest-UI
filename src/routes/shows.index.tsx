@@ -273,7 +273,7 @@ function ShowsPage() {
             variant="outline"
             disabled={shows.data.first}
             onClick={() =>
-              navigate({ search: (prev) => ({ ...prev, page: prev.page - 1 }) })
+              navigate({ search: (prev) => ({ ...prev, page: (prev.page ?? 0) - 1 }) })
             }
           >
             Previous
@@ -285,7 +285,7 @@ function ShowsPage() {
             variant="outline"
             disabled={shows.data.last}
             onClick={() =>
-              navigate({ search: (prev) => ({ ...prev, page: prev.page + 1 }) })
+              navigate({ search: (prev) => ({ ...prev, page: (prev.page ?? 0) + 1 }) })
             }
           >
             Next
