@@ -1,5 +1,13 @@
-export function formatMoney(amount: number): string {
-  return `₹${amount.toLocaleString("en-IN")}`;
+export function formatMoney(amount: number, currency = "INR"): string {
+  try {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    return `${currency} ${amount.toLocaleString("en-IN")}`;
+  }
 }
 
 export function formatDateTime(iso?: string): string {
@@ -33,7 +41,7 @@ export function formatTime(iso?: string): string {
   return d.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
 }
 
-/** Indicative tier pricing — the API does not expose ticket prices yet. */
+/** Used only on catalog cards before show inventory is loaded. */
 const TIER_PRICES: Record<string, number> = {
   SILVER: 1499,
   GOLD: 2499,

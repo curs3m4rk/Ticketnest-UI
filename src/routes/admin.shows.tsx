@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { CircleDollarSign, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { ApiErrorState } from "@/components/api-error-state";
@@ -51,7 +51,7 @@ export const Route = createFileRoute("/admin/shows")({
   component: AdminShowsPage,
 });
 
-const STATUSES = ["SCHEDULED", "ON_SALE", "SOLD_OUT", "CANCELLED", "COMPLETED"];
+const STATUSES = ["ACTIVE", "SCHEDULED", "ON_SALE", "SOLD_OUT", "CANCELLED", "COMPLETED"];
 
 function toLocalInput(iso?: string) {
   if (!iso) return "";
@@ -65,12 +65,15 @@ function AdminShowsPage() {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState<ShowResponse | null>(null);
   const [open, setOpen] = useState(false);
+  const [inventoryShow, setInventoryShow] = useState<ShowResponse | null>(null);
+  const [currency, setCurrency] = useState("INR");
+  const [tierPrices, setTierPrices] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     venueId: "",
     title: "",
     genre: "",
     startTime: "",
-    status: "SCHEDULED",
+    status: "ACTIVE",
   });
 
   const venues = useQuery({ queryKey: ["venues"], queryFn: venuesApi.list });
@@ -112,6 +115,29 @@ function AdminShowsPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const initializeInventory = useMutation({
+    mutationFn: () =>
+      showsApi.initializeInventory(inventoryShow!.id, {
+        currency,
+        tierPrices: (inventoryShow?.venue?.seatTiers ?? []).map((tier) => ({
+          tier,
+          price: Number(tierPrices[tier]),
+        })),
+      }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["show-seats", result.showId] });
+      toast.success(`Inventory created with ${result.seatCount} seats`);
+      setInventoryShow(null);
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  function openInventory(show: ShowResponse) {
+    setInventoryShow(show);
+    setCurrency("INR");
+    setTierPrices(Object.fromEntries((show.venue?.seatTiers ?? []).map((tier) => [tier, ""])));
+  }
+
   function openCreate() {
     setEditing(null);
     setForm({
@@ -119,7 +145,7 @@ function AdminShowsPage() {
       title: "",
       genre: "",
       startTime: "",
-      status: "SCHEDULED",
+      status: "ACTIVE",
     });
     setOpen(true);
   }
@@ -175,19 +201,21 @@ function AdminShowsPage() {
                   <TableCell className="whitespace-nowrap text-muted-foreground">
                     {formatDate(show.startTime)} · {formatTime(show.startTime)}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {show.venue?.name ?? "—"}
-                  </TableCell>
+                  <TableCell className="text-muted-foreground">{show.venue?.name ?? "—"}</TableCell>
                   <TableCell>{show.status}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(show)}>
-                      <Pencil className="size-4" />
-                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => remove.mutate(show.id)}
+                      title="Initialize priced seat inventory"
+                      onClick={() => openInventory(show)}
                     >
+                      <CircleDollarSign className="size-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => openEdit(show)}>
+                      <Pencil className="size-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => remove.mutate(show.id)}>
                       <Trash2 className="size-4" />
                     </Button>
                   </TableCell>
@@ -276,6 +304,69 @@ function AdminShowsPage() {
             </Button>
             <Button disabled={!valid || save.isPending} onClick={() => save.mutate()}>
               {save.isPending ? "Saving…" : "Save show"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(inventoryShow)}
+        onOpenChange={(value) => !value && setInventoryShow(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Initialize inventory — {inventoryShow?.title}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Set the price for every tier. Inventory can only be initialized once per show.
+          </p>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="currency">Currency</Label>
+              <Input
+                id="currency"
+                maxLength={3}
+                value={currency}
+                onChange={(event) => setCurrency(event.target.value.toUpperCase())}
+              />
+            </div>
+            {(inventoryShow?.venue?.seatTiers ?? []).map((tier) => (
+              <div key={tier} className="space-y-1.5">
+                <Label htmlFor={`tier-${tier}`}>{tier} price</Label>
+                <Input
+                  id={`tier-${tier}`}
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={tierPrices[tier] ?? ""}
+                  onChange={(event) =>
+                    setTierPrices((prices) => ({ ...prices, [tier]: event.target.value }))
+                  }
+                />
+              </div>
+            ))}
+            {inventoryShow && !inventoryShow.venue?.seatTiers?.length ? (
+              <p className="text-sm text-destructive">
+                Create venue seats before initializing inventory.
+              </p>
+            ) : null}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInventoryShow(null)}>
+              Cancel
+            </Button>
+            <Button
+              disabled={
+                initializeInventory.isPending ||
+                currency.length !== 3 ||
+                !inventoryShow?.venue?.seatTiers?.length ||
+                (inventoryShow?.venue?.seatTiers ?? []).some(
+                  (tier) => Number(tierPrices[tier]) <= 0,
+                )
+              }
+              onClick={() => initializeInventory.mutate()}
+            >
+              {initializeInventory.isPending ? "Initializing…" : "Initialize inventory"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { showsApi, venuesApi } from "@/lib/api/endpoints";
-import { formatDate, formatMoney, formatTime, tierPrice } from "@/lib/format";
+import { formatDate, formatTime } from "@/lib/format";
 
 export const Route = createFileRoute("/venues/$venueId")({
   ssr: false,
@@ -44,9 +44,7 @@ function VenueDetailPage() {
     queryFn: () => showsApi.list({ page: 0, size: 50 }),
   });
 
-  const venueShows = (shows.data?.content ?? []).filter(
-    (s) => s.venue?.id === venueId,
-  );
+  const venueShows = (shows.data?.content ?? []).filter((s) => s.venue?.id === venueId);
 
   if (venue.isPending) {
     return (
@@ -81,13 +79,11 @@ function VenueDetailPage() {
         <div className="mt-4 flex flex-wrap gap-2">
           {(venue.data.seatTiers ?? []).map((tier) => (
             <Badge key={tier} variant="secondary">
-              {tier} · {formatMoney(tierPrice(tier))}
+              {tier}
             </Badge>
           ))}
         </div>
-        <p className="mt-4 text-sm text-muted-foreground">
-          {seats.data?.length ?? 0} seats mapped
-        </p>
+        <p className="mt-4 text-sm text-muted-foreground">{seats.data?.length ?? 0} seats mapped</p>
       </div>
 
       <h2 className="mt-8 font-display text-lg font-bold">Upcoming here</h2>
@@ -101,8 +97,7 @@ function VenueDetailPage() {
               <div className="min-w-0">
                 <p className="truncate font-medium">{show.title}</p>
                 <p className="text-xs text-muted-foreground">
-                  {show.genre} · {formatDate(show.startTime)} ·{" "}
-                  {formatTime(show.startTime)}
+                  {show.genre} · {formatDate(show.startTime)} · {formatTime(show.startTime)}
                 </p>
               </div>
               <Button asChild size="sm" variant="outline">
@@ -113,9 +108,7 @@ function VenueDetailPage() {
             </div>
           ))
         ) : (
-          <p className="text-sm text-muted-foreground">
-            No events scheduled at this venue yet.
-          </p>
+          <p className="text-sm text-muted-foreground">No events scheduled at this venue yet.</p>
         )}
       </div>
     </PageShell>

@@ -1,16 +1,16 @@
 import { useMemo } from "react";
 
 import { cn } from "@/lib/utils";
-import { formatMoney, tierPrice } from "@/lib/format";
-import type { SeatResponse } from "@/lib/api/types";
+import { formatMoney } from "@/lib/format";
+import type { ShowSeatResponse } from "@/lib/api/types";
 
 export interface SeatRow {
   row: string;
-  seats: SeatResponse[];
+  seats: ShowSeatResponse[];
 }
 
-export function groupSeats(seats: SeatResponse[]): SeatRow[] {
-  const map = new Map<string, SeatResponse[]>();
+export function groupSeats(seats: ShowSeatResponse[]): SeatRow[] {
+  const map = new Map<string, ShowSeatResponse[]>();
   for (const seat of seats) {
     const key = seat.row ?? "-";
     if (!map.has(key)) map.set(key, []);
@@ -32,16 +32,13 @@ export function SeatMap({
   onToggle,
   maxSeats = 10,
 }: {
-  seats: SeatResponse[];
+  seats: ShowSeatResponse[];
   selectedIds: string[];
-  onToggle: (seat: SeatResponse) => void;
+  onToggle: (seat: ShowSeatResponse) => void;
   maxSeats?: number;
 }) {
   const rows = useMemo(() => groupSeats(seats), [seats]);
-  const tiers = useMemo(
-    () => [...new Set(seats.map((s) => s.tier))].sort(),
-    [seats],
-  );
+  const tiers = useMemo(() => [...new Set(seats.map((s) => s.tier))].sort(), [seats]);
   const selected = new Set(selectedIds);
   const limitReached = selectedIds.length >= maxSeats;
 
@@ -67,26 +64,27 @@ export function SeatMap({
         <div className="min-w-max space-y-1.5 py-2">
           {rows.map(({ row, seats: rowSeats }) => (
             <div key={row} className="flex items-center gap-2">
-              <span className="w-5 shrink-0 text-xs font-medium text-muted-foreground">
-                {row}
-              </span>
+              <span className="w-5 shrink-0 text-xs font-medium text-muted-foreground">{row}</span>
               <div className="flex gap-1.5">
                 {rowSeats.map((seat) => {
                   const isSelected = selected.has(seat.id);
-                  const disabled = !isSelected && limitReached;
+                  const unavailable = seat.availability !== "AVAILABLE";
+                  const disabled = unavailable || (!isSelected && limitReached);
                   return (
                     <button
                       key={seat.id}
                       type="button"
                       disabled={disabled}
                       onClick={() => onToggle(seat)}
-                      title={`${seat.row}${seat.number} · ${seat.tier} · ${formatMoney(tierPrice(seat.tier))}`}
+                      title={`${seat.row}${seat.number} · ${seat.tier} · ${formatMoney(seat.price, seat.currency)}${unavailable ? " · Unavailable" : ""}`}
                       aria-pressed={isSelected}
                       className={cn(
                         "size-7 rounded text-[10px] font-medium transition-colors",
-                        isSelected
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-seat-available text-seat-available-foreground hover:bg-primary/25",
+                        unavailable
+                          ? "bg-seat-reserved text-muted-foreground"
+                          : isSelected
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-seat-available text-seat-available-foreground hover:bg-primary/25",
                         disabled && "cursor-not-allowed opacity-40",
                       )}
                     >
@@ -102,12 +100,15 @@ export function SeatMap({
 
       {tiers.length ? (
         <div className="flex flex-wrap gap-x-6 gap-y-2 border-t pt-4 text-xs text-muted-foreground">
-          {tiers.map((tier) => (
-            <span key={tier}>
-              <span className="font-medium text-foreground">{tier}</span> ·{" "}
-              {formatMoney(tierPrice(tier))}
-            </span>
-          ))}
+          {tiers.map((tier) => {
+            const seat = seats.find((item) => item.tier === tier);
+            return (
+              <span key={tier}>
+                <span className="font-medium text-foreground">{tier}</span> ·{" "}
+                {formatMoney(seat?.price ?? 0, seat?.currency)}
+              </span>
+            );
+          })}
         </div>
       ) : null}
     </div>

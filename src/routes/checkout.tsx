@@ -1,18 +1,16 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Check, CreditCard, Landmark, Smartphone, Wallet } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Check } from "lucide-react";
+import { toast } from "sonner";
 
 import { PageShell } from "@/components/page-shell";
 import { PendingBackendNote } from "@/components/pending-backend-note";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  BOOKING_FEE,
-  cartSubtotal,
-  confirmBooking,
-  useCart,
-} from "@/lib/booking-store";
+import { cartSubtotal, setCart, useCart } from "@/lib/booking-store";
+import { bookingsApi } from "@/lib/api/endpoints";
 import { formatDate, formatMoney, formatTime } from "@/lib/format";
 import { useSession } from "@/lib/use-session";
 import { cn } from "@/lib/utils";
@@ -24,29 +22,17 @@ export const Route = createFileRoute("/checkout")({
       { title: "Checkout — TicketNest" },
       {
         name: "description",
-        content: "Confirm your contact details and payment method to book your seats.",
+        content: "Review your details and hold selected seats.",
       },
       { property: "og:title", content: "Checkout — TicketNest" },
       {
         property: "og:description",
-        content: "Confirm your details and payment method to book your seats.",
+        content: "Review your details and hold selected seats.",
       },
     ],
   }),
   component: CheckoutPage,
 });
-
-const METHODS = [
-  { id: "UPI", label: "UPI", hint: "Pay using any UPI app", icon: Smartphone },
-  {
-    id: "CARD",
-    label: "Credit / Debit card",
-    hint: "Visa, Mastercard, RuPay",
-    icon: CreditCard,
-  },
-  { id: "NETBANKING", label: "Net banking", hint: "All major banks", icon: Landmark },
-  { id: "WALLET", label: "Wallets", hint: "Paytm, PhonePe, Amazon Pay", icon: Wallet },
-];
 
 function Step({
   index,
@@ -90,6 +76,7 @@ function Step({
 function CheckoutPage() {
   const cart = useCart();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useSession();
   const [step, setStep] = useState(1);
   const [contact, setContact] = useState({
@@ -97,7 +84,7 @@ function CheckoutPage() {
     email: "",
     phone: "",
   });
-  const [method, setMethod] = useState("UPI");
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
 
   const filled = {
     fullName: contact.fullName || [user?.firstName, user?.lastName].filter(Boolean).join(" "),
@@ -106,11 +93,37 @@ function CheckoutPage() {
   };
 
   const subtotal = cartSubtotal(cart);
-  const total = subtotal ? subtotal + BOOKING_FEE : 0;
   const contactValid =
     filled.fullName.trim().length > 1 &&
     /.+@.+\..+/.test(filled.email) &&
     filled.phone.trim().length >= 8;
+
+  const createBooking = useMutation({
+    mutationFn: () =>
+      bookingsApi.create(
+        { showId: cart!.showId, showSeatIds: cart!.seats.map((seat) => seat.id) },
+        idempotencyKey,
+      ),
+    onSuccess: (booking) => {
+      setCart(null);
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["show-seats", booking.showId] });
+      navigate({
+        to: "/confirmation/$reference",
+        params: { reference: booking.id },
+      });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  function pay() {
+    if (!user) {
+      toast.error("Sign in before holding your seats");
+      navigate({ to: "/auth/login" });
+      return;
+    }
+    createBooking.mutate();
+  }
 
   if (!cart || !cart.seats.length) {
     return (
@@ -126,11 +139,6 @@ function CheckoutPage() {
         </div>
       </PageShell>
     );
-  }
-
-  function pay() {
-    const booking = confirmBooking(cart!, filled, method);
-    navigate({ to: "/confirmation/$reference", params: { reference: booking.reference } });
   }
 
   return (
@@ -158,9 +166,7 @@ function CheckoutPage() {
                 <Input
                   id="fullName"
                   value={filled.fullName}
-                  onChange={(e) =>
-                    setContact((c) => ({ ...c, fullName: e.target.value }))
-                  }
+                  onChange={(e) => setContact((c) => ({ ...c, fullName: e.target.value }))}
                 />
               </div>
               <div className="space-y-1.5">
@@ -192,65 +198,26 @@ function CheckoutPage() {
 
           <Step
             index={2}
-            title="Payment"
+            title="Review & hold"
             open={step === 2}
             onOpen={() => contactValid && setStep(2)}
-            done={step > 2}
-          >
-            <div className="space-y-2">
-              {METHODS.map((m) => {
-                const Icon = m.icon;
-                return (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => setMethod(m.id)}
-                    className={cn(
-                      "flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors",
-                      method === m.id
-                        ? "border-primary bg-accent/60"
-                        : "hover:bg-muted",
-                    )}
-                  >
-                    <Icon className="size-4 text-primary" />
-                    <span>
-                      <span className="block text-sm font-medium">{m.label}</span>
-                      <span className="block text-xs text-muted-foreground">
-                        {m.hint}
-                      </span>
-                    </span>
-                  </button>
-                );
-              })}
-              <Button className="mt-2" onClick={() => setStep(3)}>
-                Continue
-              </Button>
-            </div>
-          </Step>
-
-          <Step
-            index={3}
-            title="Review & confirm"
-            open={step === 3}
-            onOpen={() => contactValid && setStep(3)}
             done={false}
           >
             <div className="space-y-2 text-sm">
               <p className="font-medium">{cart.showTitle}</p>
               <p className="text-muted-foreground">
-                {formatDate(cart.startTime)} · {formatTime(cart.startTime)} ·{" "}
-                {cart.venueName}, {cart.venueCity}
+                {formatDate(cart.startTime)} · {formatTime(cart.startTime)} · {cart.venueName},{" "}
+                {cart.venueCity}
               </p>
               <p className="text-muted-foreground">
-                {cart.seats.map((s) => `${s.row}${s.number}`).join(", ")} ·{" "}
-                {cart.seats.length} ticket(s)
+                {cart.seats.map((s) => `${s.row}${s.number}`).join(", ")} · {cart.seats.length}{" "}
+                ticket(s)
               </p>
-              <p className="text-muted-foreground">
-                Paying with {METHODS.find((m) => m.id === method)?.label} ·{" "}
-                {filled.email}
-              </p>
-              <Button className="mt-2 w-full" onClick={pay}>
-                Pay {formatMoney(total)}
+              <p className="text-muted-foreground">Account: {filled.email}</p>
+              <Button className="mt-2 w-full" disabled={createBooking.isPending} onClick={pay}>
+                {createBooking.isPending
+                  ? "Holding seats…"
+                  : `Hold seats for ${formatMoney(subtotal, cart.currency)}`}
               </Button>
             </div>
           </Step>
@@ -258,23 +225,19 @@ function CheckoutPage() {
 
         <aside className="space-y-4">
           <div className="card-surface space-y-3 rounded-xl p-5 text-sm">
-            <h2 className="font-semibold">Payment</h2>
+            <h2 className="font-semibold">Seat hold</h2>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Tickets</span>
-              <span>{formatMoney(subtotal)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Booking fee</span>
-              <span>{formatMoney(BOOKING_FEE)}</span>
+              <span>{formatMoney(subtotal, cart.currency)}</span>
             </div>
             <div className="flex justify-between border-t pt-3 text-base font-semibold">
               <span>Total amount</span>
-              <span>{formatMoney(total)}</span>
+              <span>{formatMoney(subtotal, cart.currency)}</span>
             </div>
           </div>
           <PendingBackendNote>
-            No money moves here. Payment and order creation need endpoints on your
-            API — this flow records the booking in your browser instead.
+            The API creates a temporary seat hold, not a payment. Complete the payment flow after a
+            payment endpoint is added; otherwise the hold expires automatically.
           </PendingBackendNote>
         </aside>
       </div>

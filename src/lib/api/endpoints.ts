@@ -1,6 +1,9 @@
 import { apiRequest } from "./client";
 import type {
   AdminUserResponse,
+  BookingCreateRequest,
+  BookingResponse,
+  BookingStatus,
   LoginRequest,
   LoginResponse,
   PageResponse,
@@ -13,37 +16,42 @@ import type {
   SeatBatchCreateResponse,
   SeatResponse,
   ShowFilter,
+  ShowInventoryRequest,
+  ShowInventoryResponse,
   ShowRequest,
   ShowResponse,
+  ShowSeatResponse,
   UUID,
   VenueRequest,
   VenueResponse,
 } from "./types";
 
+const API = "/api/v1";
+
 export const authApi = {
   login: (body: LoginRequest) =>
-    apiRequest<LoginResponse>("/auth/login", { method: "POST", body, auth: false }),
+    apiRequest<LoginResponse>(`${API}/auth/login`, { method: "POST", body, auth: false }),
   register: (body: RegisterRequest) =>
-    apiRequest<RegisterResponse>("/auth/register", {
+    apiRequest<RegisterResponse>(`${API}/auth/register`, {
       method: "POST",
       body,
       auth: false,
     }),
   logout: (refreshToken: string) =>
-    apiRequest<void>("/auth/logout", { method: "POST", body: { refreshToken } }),
+    apiRequest<void>(`${API}/auth/logout`, { method: "POST", body: { refreshToken } }),
 };
 
 export const venuesApi = {
-  list: () => apiRequest<VenueResponse[]>("/api/venues"),
-  get: (id: UUID) => apiRequest<VenueResponse>(`/api/venues/${id}`),
+  list: () => apiRequest<VenueResponse[]>(`${API}/venues`),
+  get: (id: UUID) => apiRequest<VenueResponse>(`${API}/venues/${id}`),
   create: (body: VenueRequest) =>
-    apiRequest<VenueResponse>("/api/venues", { method: "POST", body }),
+    apiRequest<VenueResponse>(`${API}/venues`, { method: "POST", body }),
   update: (id: UUID, body: VenueRequest) =>
-    apiRequest<VenueResponse>(`/api/venues/${id}`, { method: "PUT", body }),
-  remove: (id: UUID) => apiRequest<void>(`/api/venues/${id}`, { method: "DELETE" }),
-  seats: (id: UUID) => apiRequest<SeatResponse[]>(`/api/venues/${id}/seats`),
+    apiRequest<VenueResponse>(`${API}/venues/${id}`, { method: "PUT", body }),
+  remove: (id: UUID) => apiRequest<void>(`${API}/venues/${id}`, { method: "DELETE" }),
+  seats: (id: UUID) => apiRequest<SeatResponse[]>(`${API}/venues/${id}/seats`),
   createSeats: (id: UUID, body: SeatBatchCreateRequest) =>
-    apiRequest<SeatBatchCreateResponse>(`/api/venues/${id}/seats`, {
+    apiRequest<SeatBatchCreateResponse>(`${API}/venues/${id}/seats`, {
       method: "POST",
       body,
     }),
@@ -57,7 +65,7 @@ export interface ShowsQuery extends ShowFilter {
 
 export const showsApi = {
   list: ({ city, genre, from, to, page = 0, size = 12, sort }: ShowsQuery = {}) =>
-    apiRequest<PageResponse<ShowResponse>>("/api/shows", {
+    apiRequest<PageResponse<ShowResponse>>(`${API}/shows`, {
       query: {
         city,
         genre,
@@ -68,30 +76,50 @@ export const showsApi = {
         ...(sort ? { sort } : {}),
       },
     }),
-  get: (id: UUID) => apiRequest<ShowResponse>(`/api/shows/${id}`),
-  create: (body: ShowRequest) =>
-    apiRequest<ShowResponse>("/api/shows", { method: "POST", body }),
+  get: (id: UUID) => apiRequest<ShowResponse>(`${API}/shows/${id}`),
+  create: (body: ShowRequest) => apiRequest<ShowResponse>(`${API}/shows`, { method: "POST", body }),
   update: (id: UUID, body: ShowRequest) =>
-    apiRequest<ShowResponse>(`/api/shows/${id}`, { method: "PUT", body }),
-  remove: (id: UUID) => apiRequest<void>(`/api/shows/${id}`, { method: "DELETE" }),
+    apiRequest<ShowResponse>(`${API}/shows/${id}`, { method: "PUT", body }),
+  remove: (id: UUID) => apiRequest<void>(`${API}/shows/${id}`, { method: "DELETE" }),
+  seats: (id: UUID) => apiRequest<ShowSeatResponse[]>(`${API}/shows/${id}/seats`),
+  initializeInventory: (id: UUID, body: ShowInventoryRequest) =>
+    apiRequest<ShowInventoryResponse>(`${API}/shows/${id}/inventory`, {
+      method: "POST",
+      body,
+    }),
+};
+
+export const bookingsApi = {
+  create: (body: BookingCreateRequest, idempotencyKey: string) =>
+    apiRequest<BookingResponse>(`${API}/bookings`, {
+      method: "POST",
+      body,
+      headers: { "Idempotency-Key": idempotencyKey },
+    }),
+  get: (id: UUID) => apiRequest<BookingResponse>(`${API}/bookings/${id}`),
+  list: (status?: BookingStatus, page = 0, size = 20) =>
+    apiRequest<PageResponse<BookingResponse>>(`${API}/bookings`, {
+      query: { status, page, size },
+    }),
+  cancel: (id: UUID) =>
+    apiRequest<BookingResponse>(`${API}/bookings/${id}/cancel`, { method: "POST" }),
 };
 
 export const adminApi = {
-  roles: () => apiRequest<RoleResponse[]>("/api/admin/roles"),
-  role: (id: UUID) => apiRequest<RoleResponse>(`/api/admin/roles/${id}`),
+  roles: () => apiRequest<RoleResponse[]>(`${API}/admin/roles`),
+  role: (id: UUID) => apiRequest<RoleResponse>(`${API}/admin/roles/${id}`),
   createRole: (body: RoleRequest) =>
-    apiRequest<RoleResponse>("/api/admin/roles", { method: "POST", body }),
+    apiRequest<RoleResponse>(`${API}/admin/roles`, { method: "POST", body }),
   updateRole: (id: UUID, body: RoleRequest) =>
-    apiRequest<RoleResponse>(`/api/admin/roles/${id}`, { method: "PUT", body }),
-  removeRole: (id: UUID) =>
-    apiRequest<void>(`/api/admin/roles/${id}`, { method: "DELETE" }),
-  permissions: () => apiRequest<Permission[]>("/api/admin/permissions"),
+    apiRequest<RoleResponse>(`${API}/admin/roles/${id}`, { method: "PUT", body }),
+  removeRole: (id: UUID) => apiRequest<void>(`${API}/admin/roles/${id}`, { method: "DELETE" }),
+  permissions: () => apiRequest<Permission[]>(`${API}/admin/permissions`),
   users: (page = 0, size = 20) =>
-    apiRequest<PageResponse<AdminUserResponse>>("/api/admin/users", {
+    apiRequest<PageResponse<AdminUserResponse>>(`${API}/admin/users`, {
       query: { page, size },
     }),
   replaceRoles: (userId: UUID, roleIds: UUID[]) =>
-    apiRequest<AdminUserResponse>(`/api/admin/users/${userId}/roles`, {
+    apiRequest<AdminUserResponse>(`${API}/admin/users/${userId}/roles`, {
       method: "PUT",
       body: { roleIds },
     }),

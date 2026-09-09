@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { showsApi } from "@/lib/api/endpoints";
-import { formatDate, formatMoney, formatTime, tierPrice } from "@/lib/format";
+import { formatDate, formatMoney, formatTime } from "@/lib/format";
 
 export const Route = createFileRoute("/shows/$showId/")({
   ssr: false,
@@ -18,8 +18,7 @@ export const Route = createFileRoute("/shows/$showId/")({
       { title: "Event details — TicketNest" },
       {
         name: "description",
-        content:
-          "See timing, venue and ticket tiers for this live event, then choose your seats.",
+        content: "See timing, venue and ticket tiers for this live event, then choose your seats.",
       },
       { property: "og:title", content: "Event details — TicketNest" },
       {
@@ -36,6 +35,10 @@ function ShowDetailPage() {
   const show = useQuery({
     queryKey: ["show", showId],
     queryFn: () => showsApi.get(showId),
+  });
+  const seats = useQuery({
+    queryKey: ["show-seats", showId],
+    queryFn: () => showsApi.seats(showId),
   });
 
   if (show.isPending) {
@@ -55,7 +58,11 @@ function ShowDetailPage() {
   }
 
   const data = show.data;
-  const tiers = data.venue?.seatTiers ?? [];
+  const tiers = [
+    ...new Map(
+      (seats.data ?? []).map((seat) => [seat.tier, { price: seat.price, currency: seat.currency }]),
+    ).entries(),
+  ];
 
   return (
     <PageShell
@@ -98,27 +105,22 @@ function ShowDetailPage() {
             <h2 className="font-semibold">Ticket tiers</h2>
             {tiers.length ? (
               <ul className="mt-3 divide-y">
-                {tiers.map((tier) => (
-                  <li
-                    key={tier}
-                    className="flex items-center justify-between py-3 text-sm"
-                  >
+                {tiers.map(([tier, pricing]) => (
+                  <li key={tier} className="flex items-center justify-between py-3 text-sm">
                     <span className="font-medium">{tier}</span>
                     <span className="font-semibold text-primary">
-                      {formatMoney(tierPrice(tier))}
+                      {formatMoney(pricing.price, pricing.currency)}
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
               <p className="mt-2 text-sm text-muted-foreground">
-                No seat tiers have been set up for this venue yet.
+                {seats.isError
+                  ? "Priced inventory has not been initialized for this show yet."
+                  : "No seats are available for this show."}
               </p>
             )}
-            <p className="mt-3 text-xs text-muted-foreground">
-              Prices are indicative per tier — your API does not publish ticket
-              prices yet.
-            </p>
           </div>
         </div>
 
@@ -129,7 +131,7 @@ function ShowDetailPage() {
               <span>0 tickets</span>
               <span>{formatMoney(0)}</span>
             </div>
-            {data.venue ? (
+            {seats.data?.length ? (
               <Button asChild className="w-full">
                 <Link to="/shows/$showId/seats" params={{ showId: data.id }}>
                   Select seats
@@ -137,7 +139,7 @@ function ShowDetailPage() {
               </Button>
             ) : (
               <Button className="w-full" disabled>
-                Venue not assigned
+                Inventory unavailable
               </Button>
             )}
           </div>
@@ -150,8 +152,8 @@ function ShowDetailPage() {
               },
               {
                 icon: <Zap className="size-4" />,
-                title: "Instant confirmation",
-                body: "Booking reference issued immediately.",
+                title: "Immediate seat hold",
+                body: "A server booking reference is issued immediately.",
               },
               {
                 icon: <Headphones className="size-4" />,

@@ -5,14 +5,13 @@ import { toast } from "sonner";
 
 import { ApiErrorState } from "@/components/api-error-state";
 import { PageShell } from "@/components/page-shell";
-import { PendingBackendNote } from "@/components/pending-backend-note";
 import { SeatMap } from "@/components/seat-map";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { showsApi, venuesApi } from "@/lib/api/endpoints";
+import { showsApi } from "@/lib/api/endpoints";
 import { setCart, type CartSeat } from "@/lib/booking-store";
-import { formatMoney, tierPrice } from "@/lib/format";
-import type { SeatResponse } from "@/lib/api/types";
+import { formatMoney } from "@/lib/format";
+import type { ShowSeatResponse } from "@/lib/api/types";
 
 export const Route = createFileRoute("/shows/$showId/seats")({
   ssr: false,
@@ -37,26 +36,21 @@ export const Route = createFileRoute("/shows/$showId/seats")({
 function SeatSelectionPage() {
   const { showId } = Route.useParams();
   const navigate = useNavigate();
-  const [selected, setSelected] = useState<SeatResponse[]>([]);
+  const [selected, setSelected] = useState<ShowSeatResponse[]>([]);
 
   const show = useQuery({
     queryKey: ["show", showId],
     queryFn: () => showsApi.get(showId),
   });
 
-  const venueId = show.data?.venue?.id;
-
   const seats = useQuery({
-    queryKey: ["venue-seats", venueId],
-    queryFn: () => venuesApi.seats(venueId!),
-    enabled: Boolean(venueId),
+    queryKey: ["show-seats", showId],
+    queryFn: () => showsApi.seats(showId),
   });
 
-  function toggle(seat: SeatResponse) {
+  function toggle(seat: ShowSeatResponse) {
     setSelected((prev) =>
-      prev.some((s) => s.id === seat.id)
-        ? prev.filter((s) => s.id !== seat.id)
-        : [...prev, seat],
+      prev.some((s) => s.id === seat.id) ? prev.filter((s) => s.id !== seat.id) : [...prev, seat],
     );
   }
 
@@ -65,7 +59,7 @@ function SeatSelectionPage() {
     row: s.row,
     number: s.number,
     tier: s.tier,
-    price: tierPrice(s.tier),
+    price: s.price,
   }));
   const total = cartSeats.reduce((sum, s) => sum + s.price, 0);
 
@@ -80,6 +74,7 @@ function SeatSelectionPage() {
       venueId: data.venue.id,
       venueName: data.venue.name,
       venueCity: data.venue.city,
+      currency: selected[0]?.currency ?? "INR",
       seats: cartSeats,
     });
     toast.success(`${cartSeats.length} seat(s) added`);
@@ -106,21 +101,13 @@ function SeatSelectionPage() {
             <Skeleton className="h-72 rounded-lg" />
           ) : show.isError ? (
             <ApiErrorState error={show.error} onRetry={() => show.refetch()} />
-          ) : !venueId ? (
-            <p className="py-10 text-center text-sm text-muted-foreground">
-              This event has no venue assigned, so there is no seat map yet.
-            </p>
           ) : seats.isError ? (
             <ApiErrorState error={seats.error} onRetry={() => seats.refetch()} />
           ) : seats.data?.length ? (
-            <SeatMap
-              seats={seats.data}
-              selectedIds={selected.map((s) => s.id)}
-              onToggle={toggle}
-            />
+            <SeatMap seats={seats.data} selectedIds={selected.map((s) => s.id)} onToggle={toggle} />
           ) : (
             <p className="py-10 text-center text-sm text-muted-foreground">
-              No seats have been created for this venue yet.
+              No seats are available for this show.
             </p>
           )}
         </div>
@@ -135,7 +122,9 @@ function SeatSelectionPage() {
                     <span>
                       {seat.tier} · Row {seat.row}, seat {seat.number}
                     </span>
-                    <span className="font-medium">{formatMoney(seat.price)}</span>
+                    <span className="font-medium">
+                      {formatMoney(seat.price, selected[0]?.currency)}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -146,7 +135,7 @@ function SeatSelectionPage() {
             )}
             <div className="flex items-center justify-between border-t pt-3 font-semibold">
               <span>Total</span>
-              <span>{formatMoney(total)}</span>
+              <span>{formatMoney(total, selected[0]?.currency)}</span>
             </div>
             <Button className="w-full" disabled={!cartSeats.length} onClick={addToCart}>
               Add to cart
@@ -159,11 +148,6 @@ function SeatSelectionPage() {
               Back
             </Button>
           </div>
-          <PendingBackendNote>
-            Seats come from your venue API. Availability, holds and payment are not
-            in the API yet, so every seat shows as available and the cart lives in
-            this browser only.
-          </PendingBackendNote>
         </aside>
       </div>
     </PageShell>

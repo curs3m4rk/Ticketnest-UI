@@ -1,117 +1,88 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 
+import { ApiErrorState } from "@/components/api-error-state";
 import { PendingBackendNote } from "@/components/pending-backend-note";
 import { ShowPoster } from "@/components/show-card";
 import { Button } from "@/components/ui/button";
-import { useBookings } from "@/lib/booking-store";
+import { Skeleton } from "@/components/ui/skeleton";
+import { bookingsApi, showsApi } from "@/lib/api/endpoints";
 import { formatDate, formatMoney, formatTime } from "@/lib/format";
 
 export const Route = createFileRoute("/account/tickets/$reference")({
   ssr: false,
-  head: () => ({
-    meta: [
-      { title: "My ticket — TicketNest" },
-      {
-        name: "description",
-        content: "Your entry ticket with seat, gate and booking reference.",
-      },
-      { property: "og:title", content: "My ticket — TicketNest" },
-      {
-        property: "og:description",
-        content: "Your entry ticket with seat, gate and booking reference.",
-      },
-    ],
-  }),
+  head: () => ({ meta: [{ title: "Booking details — TicketNest" }] }),
   component: TicketPage,
 });
 
 function TicketPage() {
   const { reference } = Route.useParams();
-  const booking = useBookings().find((b) => b.reference === reference);
+  const booking = useQuery({
+    queryKey: ["booking", reference],
+    queryFn: () => bookingsApi.get(reference),
+  });
+  const show = useQuery({
+    queryKey: ["show", booking.data?.showId],
+    queryFn: () => showsApi.get(booking.data!.showId),
+    enabled: Boolean(booking.data?.showId),
+  });
 
-  if (!booking) {
-    return (
-      <div className="card-surface rounded-xl px-6 py-14 text-center">
-        <h1 className="font-display text-xl font-bold">Ticket not found</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          This ticket isn't stored in this browser.
-        </p>
-        <Button asChild className="mt-4">
-          <Link to="/account/bookings">Back to my bookings</Link>
-        </Button>
-      </div>
-    );
-  }
-
-  const seats = booking.seats;
+  if (booking.isPending) return <Skeleton className="h-72 rounded-xl" />;
+  if (booking.isError)
+    return <ApiErrorState error={booking.error} onRetry={() => booking.refetch()} />;
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-bold">My ticket</h1>
-
+      <h1 className="font-display text-2xl font-bold">Booking details</h1>
       <div className="card-surface mt-4 overflow-hidden rounded-2xl md:flex">
         <ShowPoster
-          seed={booking.showId + booking.showTitle}
-          title={booking.genre}
+          seed={booking.data.showId + (show.data?.title ?? "event")}
+          title={show.data?.genre ?? "Event"}
           className="h-48 w-full md:h-auto md:w-56"
         />
         <div className="flex-1 space-y-4 p-6">
           <div>
-            <h2 className="font-display text-xl font-bold">{booking.showTitle}</h2>
+            <h2 className="font-display text-xl font-bold">{show.data?.title ?? "Event"}</h2>
             <p className="text-sm text-muted-foreground">
-              {formatDate(booking.startTime)} · {formatTime(booking.startTime)}
+              {formatDate(show.data?.startTime)} · {formatTime(show.data?.startTime)}
             </p>
-            <p className="text-sm text-muted-foreground">
-              {booking.venueName}, {booking.venueCity}
-            </p>
+            <p className="text-sm text-muted-foreground">Status: {booking.data.status}</p>
           </div>
-
           <div className="grid grid-cols-2 gap-4 border-t pt-4 text-sm sm:grid-cols-3">
             <div>
               <p className="text-xs uppercase text-muted-foreground">Row / seats</p>
               <p className="font-medium">
-                {seats.map((s) => `${s.row}${s.number}`).join(", ")}
+                {booking.data.seats.map((seat) => `${seat.row}${seat.number}`).join(", ")}
               </p>
             </div>
             <div>
-              <p className="text-xs uppercase text-muted-foreground">Seat type</p>
-              <p className="font-medium">{seats[0]?.tier ?? "—"}</p>
+              <p className="text-xs uppercase text-muted-foreground">Expires</p>
+              <p className="font-medium">
+                {formatDate(booking.data.expiresAt)} {formatTime(booking.data.expiresAt)}
+              </p>
             </div>
             <div>
-              <p className="text-xs uppercase text-muted-foreground">Amount paid</p>
-              <p className="font-medium">{formatMoney(booking.total)}</p>
+              <p className="text-xs uppercase text-muted-foreground">Amount</p>
+              <p className="font-medium">
+                {formatMoney(booking.data.totalAmount, booking.data.currency)}
+              </p>
             </div>
           </div>
-
           <div className="border-t pt-4">
             <p className="text-xs uppercase text-muted-foreground">Booking ID</p>
-            <p className="font-display text-lg font-bold">{booking.reference}</p>
-            <div className="mt-3 flex h-12 items-end gap-[2px]" aria-hidden="true">
-              {booking.reference.split("").flatMap((ch, i) =>
-                Array.from({ length: 3 }).map((_, j) => (
-                  <span
-                    key={`${i}-${j}`}
-                    className="w-[3px] bg-foreground"
-                    style={{
-                      height: `${40 + ((ch.charCodeAt(0) * (j + 2)) % 60)}%`,
-                    }}
-                  />
-                )),
-              )}
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Show this reference at the entry gate.
-            </p>
+            <p className="break-all font-display text-base font-bold">{booking.data.id}</p>
           </div>
         </div>
       </div>
-
       <div className="mt-4">
         <PendingBackendNote>
-          A real scannable ticket needs a ticketing endpoint on your API — this
-          barcode is decorative for now.
+          The backend currently creates seat holds. A scannable entry ticket will become available
+          after payment confirmation is implemented.
         </PendingBackendNote>
       </div>
+      <Button asChild variant="outline" className="mt-4">
+        <Link to="/account/bookings">Back to bookings</Link>
+      </Button>
     </div>
   );
 }

@@ -1,10 +1,5 @@
 import { getApiBaseUrl } from "./config";
-import {
-  clearSession,
-  getAccessToken,
-  getRefreshToken,
-  setTokens,
-} from "./session";
+import { clearSession, getAccessToken, getRefreshToken, setTokens } from "./session";
 import type { TokenResponse } from "./types";
 
 export class ApiError extends Error {
@@ -29,15 +24,13 @@ interface RequestOptions {
   body?: unknown;
   query?: Record<string, string | number | string[] | undefined | null>;
   auth?: boolean;
+  headers?: Record<string, string>;
   signal?: AbortSignal;
 }
 
 function buildUrl(path: string, query?: RequestOptions["query"]) {
   const base = getApiBaseUrl();
-  const url = new URL(
-    path.startsWith("/") ? path : `/${path}`,
-    base || "http://localhost:8080",
-  );
+  const url = new URL(path.startsWith("/") ? path : `/${path}`, base || "http://localhost:8080");
   if (query) {
     for (const [key, value] of Object.entries(query)) {
       if (value === undefined || value === null || value === "") continue;
@@ -62,7 +55,7 @@ async function refreshTokens(): Promise<boolean> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) return false;
   try {
-    const res = await fetch(buildUrl("/auth/refresh"), {
+    const res = await fetch(buildUrl("/api/v1/auth/refresh"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken }),
@@ -78,7 +71,10 @@ async function refreshTokens(): Promise<boolean> {
 }
 
 async function rawRequest(path: string, options: RequestOptions) {
-  const headers: Record<string, string> = { Accept: "application/json" };
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    ...options.headers,
+  };
   if (options.body !== undefined) headers["Content-Type"] = "application/json";
   if (options.auth !== false) {
     const token = getAccessToken();
@@ -100,10 +96,7 @@ async function rawRequest(path: string, options: RequestOptions) {
   }
 }
 
-export async function apiRequest<T>(
-  path: string,
-  options: RequestOptions = {},
-): Promise<T> {
+export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   let res = await rawRequest(path, options);
 
   if (res.status === 401 && options.auth !== false && getRefreshToken()) {

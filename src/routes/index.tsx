@@ -49,8 +49,8 @@ function HomePage() {
             Create Memories
           </h1>
           <p className="max-w-xl text-sm text-hero-foreground/75">
-            Concerts, stand-up comedy, festivals and conferences — find what's on
-            near you and choose exactly where you sit.
+            Concerts, stand-up comedy, festivals and conferences — find what's on near you and
+            choose exactly where you sit.
           </p>
           <Button asChild size="lg">
             <Link to="/shows">
@@ -109,8 +109,8 @@ function HomePage() {
           },
           {
             icon: <Sparkles className="size-5" />,
-            title: "Instant confirmation",
-            body: "Get a booking reference and ticket the moment you're done.",
+            title: "Immediate seat hold",
+            body: "Get a server booking reference while your selected seats are held.",
           },
         ].map((item) => (
           <div key={item.title} className="card-surface rounded-xl p-5">

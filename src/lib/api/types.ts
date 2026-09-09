@@ -74,6 +74,33 @@ export interface ShowResponse {
   venue?: VenueSummary;
 }
 
+export interface TierPriceRequest {
+  tier: string;
+  price: number;
+}
+
+export interface ShowInventoryRequest {
+  currency: string;
+  tierPrices: TierPriceRequest[];
+}
+
+export interface ShowInventoryResponse {
+  showId: UUID;
+  currency: string;
+  seatCount: number;
+}
+
+export interface ShowSeatResponse {
+  id: UUID;
+  sourceSeatId: UUID;
+  row: string;
+  number: string;
+  tier: string;
+  price: number;
+  currency: string;
+  availability: "AVAILABLE" | "UNAVAILABLE";
+}
+
 export interface SeatResponse {
   id: UUID;
   row: string;
@@ -166,4 +193,31 @@ export interface SessionUser {
   lastName?: string;
   phoneNumber?: string;
   roles: RoleSummary[];
+}
+
+export type BookingStatus = "HELD" | "CONFIRMED" | "RELEASED" | "FAILED" | "EXPIRED";
+
+export interface BookingSeat {
+  showSeatId: UUID;
+  sourceSeatId: UUID;
+  row: string;
+  number: string;
+  tier: string;
+  unitPrice: number;
+}
+
+export interface BookingResponse {
+  id: UUID;
+  showId: UUID;
+  status: BookingStatus;
+  totalAmount: number;
+  currency: string;
+  createdAt: string;
+  expiresAt: string;
+  seats: BookingSeat[];
+}
+
+export interface BookingCreateRequest {
+  showId: UUID;
+  showSeatIds: UUID[];
 }

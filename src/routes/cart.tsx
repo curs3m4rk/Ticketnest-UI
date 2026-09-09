@@ -2,10 +2,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
 
 import { PageShell } from "@/components/page-shell";
-import { PendingBackendNote } from "@/components/pending-backend-note";
 import { ShowPoster } from "@/components/show-card";
 import { Button } from "@/components/ui/button";
-import { BOOKING_FEE, cartSubtotal, setCart, useCart } from "@/lib/booking-store";
+import { cartSubtotal, setCart, useCart } from "@/lib/booking-store";
 import { formatDate, formatMoney, formatTime } from "@/lib/format";
 
 export const Route = createFileRoute("/cart")({
@@ -31,7 +30,6 @@ function CartPage() {
   const cart = useCart();
   const navigate = useNavigate();
   const subtotal = cartSubtotal(cart);
-  const total = subtotal ? subtotal + BOOKING_FEE : 0;
 
   return (
     <PageShell crumbs={[{ label: "Home", to: "/" }, { label: "Your cart" }]}>
@@ -65,16 +63,12 @@ function CartPage() {
                   {cart.venueName}, {cart.venueCity}
                 </p>
                 <p className="mt-2 text-xs">
-                  {cart.seats
-                    .map((s) => `${s.tier} · Row ${s.row}, ${s.number}`)
-                    .join(" | ")}
+                  {cart.seats.map((s) => `${s.tier} · Row ${s.row}, ${s.number}`).join(" | ")}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {cart.seats.length} ticket(s)
-                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{cart.seats.length} ticket(s)</p>
               </div>
               <div className="flex flex-col items-end justify-between">
-                <span className="font-semibold">{formatMoney(subtotal)}</span>
+                <span className="font-semibold">{formatMoney(subtotal, cart.currency)}</span>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -91,27 +85,17 @@ function CartPage() {
             <div className="card-surface space-y-3 rounded-xl p-5 text-sm">
               <h2 className="font-semibold">Price details</h2>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">
-                  Tickets ({cart.seats.length})
-                </span>
-                <span>{formatMoney(subtotal)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Booking fee</span>
-                <span>{formatMoney(BOOKING_FEE)}</span>
+                <span className="text-muted-foreground">Tickets ({cart.seats.length})</span>
+                <span>{formatMoney(subtotal, cart.currency)}</span>
               </div>
               <div className="flex justify-between border-t pt-3 text-base font-semibold">
                 <span>Total amount</span>
-                <span>{formatMoney(total)}</span>
+                <span>{formatMoney(subtotal, cart.currency)}</span>
               </div>
               <Button className="w-full" onClick={() => navigate({ to: "/checkout" })}>
                 Proceed to checkout
               </Button>
             </div>
-            <PendingBackendNote>
-              This cart is stored in your browser. Real orders will need booking
-              endpoints on your API.
-            </PendingBackendNote>
           </aside>
         </div>
       )}
