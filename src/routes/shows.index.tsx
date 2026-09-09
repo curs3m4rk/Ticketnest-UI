@@ -20,13 +20,13 @@ import { showsApi, venuesApi } from "@/lib/api/endpoints";
 import { formatDate, formatMoney, formatTime } from "@/lib/format";
 
 interface ShowsSearch {
-  q: string;
-  city: string;
-  genre: string;
-  from: string;
-  to: string;
-  sort: string;
-  page: number;
+  q?: string;
+  city?: string;
+  genre?: string;
+  from?: string;
+  to?: string;
+  sort?: string;
+  page?: number;
 }
 
 const ANY = "__any";
