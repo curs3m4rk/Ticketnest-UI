@@ -20,13 +20,13 @@ import { showsApi, venuesApi } from "@/lib/api/endpoints";
 import { formatDate, formatMoney, formatTime } from "@/lib/format";
 
 interface ShowsSearch {
-  q: string;
-  city: string;
-  genre: string;
-  from: string;
-  to: string;
-  sort: string;
-  page: number;
+  q?: string;
+  city?: string;
+  genre?: string;
+  from?: string;
+  to?: string;
+  sort?: string;
+  page?: number;
 }
 
 const ANY = "__any";
@@ -61,7 +61,16 @@ export const Route = createFileRoute("/shows/")({
 });
 
 function ShowsPage() {
-  const search = Route.useSearch();
+  const raw = Route.useSearch();
+  const search = {
+    q: raw.q ?? "",
+    city: raw.city ?? "",
+    genre: raw.genre ?? "",
+    from: raw.from ?? "",
+    to: raw.to ?? "",
+    sort: raw.sort ?? "startTime,asc",
+    page: raw.page ?? 0,
+  };
   const navigate = useNavigate({ from: Route.fullPath });
 
   const update = (patch: Partial<ShowsSearch>) =>
@@ -264,7 +273,7 @@ function ShowsPage() {
             variant="outline"
             disabled={shows.data.first}
             onClick={() =>
-              navigate({ search: (prev) => ({ ...prev, page: prev.page - 1 }) })
+              navigate({ search: (prev) => ({ ...prev, page: (prev.page ?? 0) - 1 }) })
             }
           >
             Previous
@@ -276,7 +285,7 @@ function ShowsPage() {
             variant="outline"
             disabled={shows.data.last}
             onClick={() =>
-              navigate({ search: (prev) => ({ ...prev, page: prev.page + 1 }) })
+              navigate({ search: (prev) => ({ ...prev, page: (prev.page ?? 0) + 1 }) })
             }
           >
             Next

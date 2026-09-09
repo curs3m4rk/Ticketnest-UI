@@ -66,7 +66,7 @@ const GRADIENTS = [
 export function posterGradient(seed: string): string {
   let hash = 0;
   for (const ch of seed ?? "") hash = (hash * 33 + ch.charCodeAt(0)) % 99991;
-  return GRADIENTS[hash % GRADIENTS.length];
+  return GRADIENTS[hash % GRADIENTS.length] ?? GRADIENTS[0]!;
 }
 
 export function initials(first?: string, last?: string, email?: string): string {
