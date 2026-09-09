@@ -61,7 +61,16 @@ export const Route = createFileRoute("/shows/")({
 });
 
 function ShowsPage() {
-  const search = Route.useSearch();
+  const raw = Route.useSearch();
+  const search = {
+    q: raw.q ?? "",
+    city: raw.city ?? "",
+    genre: raw.genre ?? "",
+    from: raw.from ?? "",
+    to: raw.to ?? "",
+    sort: raw.sort ?? "startTime,asc",
+    page: raw.page ?? 0,
+  };
   const navigate = useNavigate({ from: Route.fullPath });
 
   const update = (patch: Partial<ShowsSearch>) =>
